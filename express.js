@@ -29,10 +29,13 @@ app.post('/',  function(req, res, next){
             console.error(error);
             } else {
                 const $ = cheerio.load(html);
+                let arrJokes = [];
+                for(var i = 0; req.body.count > arrJokes.length; i++){
+                    arrJokes.push( $('.quote').eq(i).text());
+                }
                 res.render('site', {
                     title: 'Запрос',
-                    site: req.body.site,
-                    item: $('.quote').eq(0).text()
+                    item: arrJokes
                 });
             }
         })
