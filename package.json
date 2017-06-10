@@ -14,11 +14,18 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.17.2",
+<<<<<<< HEAD
     "cheerio": "^1.0.0-rc.1",
     "consolidate": "^0.14.5",
     "express": "^4.15.3",
     "handlebars": "^4.0.10",
     "json": "^9.0.6",
     "request": "^2.81.0"
+=======
+    "consolidate": "^0.14.5",
+    "express": "^4.15.3",
+    "handlebars": "^4.0.10",
+    "json": "^9.0.6"
+>>>>>>> 2a996d789f44eaebdb63a70d300278dfca6cded3
   }
 }
