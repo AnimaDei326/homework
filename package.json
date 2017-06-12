@@ -16,8 +16,11 @@
     "body-parser": "^1.17.2",
     "cheerio": "^1.0.0-rc.1",
     "consolidate": "^0.14.5",
+<<<<<<< HEAD
     "cookie": "^0.3.1",
     "cookie-parser": "^1.4.3",
+=======
+>>>>>>> a0e2f5e020a0ebaf667a27d869936e7244fa7113
     "express": "^4.15.3",
     "handlebars": "^4.0.10",
     "json": "^9.0.6",
