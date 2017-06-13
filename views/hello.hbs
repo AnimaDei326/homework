@@ -6,27 +6,23 @@
     </head>
     <body>
         <form action="/" method="POST">
-<<<<<<< HEAD
             <label>Выберите сайт</label>
             <select name="site">
+                {{#if siteRes}}
+                    <option selected>{{siteRes}}</option>
+                {{/if}}
                  <option>https://news.yandex.ru/auto.html</option>
                  <option>http://ifindir.ru/blog/</option>
             </select><br>
             <label>Выберите количество новостей</label>
             <select name="count">
+                {{#if countRes}} <!--не понимаю, как можно сравнить значения, например #if(countRes == 5)-->
+                    <option selected>{{countRes}}</option>
+                {{/if}}
                 <option>1</option>
-                <option>5</option>
+                <option>5</option>    
                 <option>10</option>
             </select><br>
-=======
-            <input type="text" name="site" placeholder="введите url сайта">
-            <select name="count" value="сколько отображать шуточек">
-                <option>10</option>
-                <option>20</option>
-                <option>50</option>
-                <option>100</option>
-            </select>
->>>>>>> a0e2f5e020a0ebaf667a27d869936e7244fa7113
             <button type="submit">go</button>
         </form>
     </body>

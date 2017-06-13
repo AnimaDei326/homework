@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const app = express();
 const templating = require('consolidate');
 const cookie = require('cookie');
-const cookieParser = require('cookie-parser');
+const cookieParser = require('cookie-parser'); //не понимаю принципиальные различия между 7 и 8 строчками, что из них что может
 
 
 app.use(cookieParser());
@@ -14,11 +14,25 @@ app.engine('hbs', templating.handlebars);
 app.set('view engine', 'hbs');
 app.set('views', `${__dirname}/views`);
 
+
 app.get('/', function(req, res, next){
+    if(req.cookies.count && req.cookies.site){
+        var {count} = req.cookies.count;
+        var {site} = req.cookies.site;
+    }else{
+        var count = 0;
+        var site = 0;
+    }
     res.render('hello', {
         title: 'Главная страница',
+        countRes: count,
+        siteRes: site
     });
 });
+
+/*app.get('/:id', function(req, res, next){
+    console.log(`id:  ${req.params.id}`); //в консоле вместо аргумента id выходит 'favicon.ico', а иногда 'style.css', и при раскомментировании с 33 по 35 строки сервер не загружает данные
+});*/
 
 app.post('/',  function(req, res, next){
     request({
@@ -38,7 +52,7 @@ app.post('/',  function(req, res, next){
                     case "https://news.yandex.ru/auto.html": className = ".story__text"; break;
                 }
                 for(var i = 0; req.body.count > arrContent.length; i++){
-                    arrContent.push( $(className).eq(i).text());
+                    arrContent.push( $(className).eq(i).text() );
                 }
                 res.cookie('site',  {site:req.body.site},
                                     { maxAge: 60*60*24,
@@ -46,14 +60,14 @@ app.post('/',  function(req, res, next){
                 res.cookie('count',  {count:req.body.count},
                                     { maxAge: 60*60*24,
                                       httpOnly:false});
-                console.log('Cookies: ', req.cookies);
                 res.render("site", {
                     title: "Новости",
                     item: arrContent,
                     h1 : textH1
                 });
             }
-        })
+        }
+    )
 });
 
 
