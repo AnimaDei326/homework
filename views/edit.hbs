@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" href="style.css">
+        <title>{{title}}</title>
+    </head>
+    <body>
+        <form action="/update" method="POST">
+            <input type="hidden" value="{{rows.id}}" name="id">
+            <input type="text" value="{{rows.text}}" name="text">
+            <input type='checkbox' name='done'>
+            <span>отметить выполненным</span>
+            <button type="submit">сохранить</button>
+        </form>
+        <a href="/task">отмена</a>
+    </body>
+</html>
