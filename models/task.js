@@ -1,13 +1,5 @@
 const {connection, pool} = require('./config');
 
-connection.connect(function(err) {
-    if (err){
-        console.error(err);
-    }else{
-        console.log('connect with db is ok');
-    }
-});
-
 const Tasks = {
     showAll: function(table, callback){
         pool.getConnection(function(err, connection){
@@ -19,6 +11,7 @@ const Tasks = {
                     callback(null, result);
                 });
             }
+            connection.release();
         });
     },
     getByID: function(filtr, callback){
@@ -38,44 +31,7 @@ const Tasks = {
                     }
                 });
             }
-        });
-    },
-    update: function(filtr, callback){
-        pool.getConnection(function(err, connection){
-            if(err){
-                console.log("Error", err);
-                callback(err);
-            }else{
-                let {table, set, whereColumn, whereValue} = filtr;
-                connection.query("UPDATE ?? SET ? WHERE ?? = ?", [table, set, whereColumn, whereValue], function(err, result){
-                    if(err){
-                        console.log("Error", err);
-                        callback(err);
-                    }else if(result.affectedRows > 0){
-                        callback(null, true);
-                    }else{
-                        callback(new Error ('Задача не обновлена'));
-                    }
-                });
-            }
-        });
-    },
-    del: function(filtr, callback){
-        pool.getConnection(function(err, connection){
-            if(err){
-                console.log("Error", err);
-                callback(err);
-            }else{
-                let {table, whereColumn, whereValue} = filtr;
-                connection.query("DELETE FROM ?? WHERE ?? = ? LIMIT 1", [table, whereColumn, whereValue], function(err, result){
-                    if(err){
-                        console.log("Error", err);
-                        callback(err);
-                    }else{
-                        callback(null, result);
-                    }
-                });
-            }
+            connection.release();
         });
     },
     add: function(filtr, callback){
@@ -96,6 +52,47 @@ const Tasks = {
                     }
                 });
             }
+            connection.release();
+        });
+    },
+    update: function(filtr, callback){
+        pool.getConnection(function(err, connection){
+            if(err){
+                console.log("Error", err);
+                callback(err);
+            }else{
+                let {table, set, whereColumn, whereValue} = filtr;
+                connection.query("UPDATE ?? SET ? WHERE ?? = ?", [table, set, whereColumn, whereValue], function(err, result){
+                    if(err){
+                        console.log("Error", err);
+                        callback(err);
+                    }else if(result.affectedRows > 0){
+                        callback(null, true);
+                    }else{
+                        callback(new Error ('Задача не обновлена'));
+                    }
+                });
+            }
+            connection.release();
+        });
+    },
+    del: function(filtr, callback){
+        pool.getConnection(function(err, connection){
+            if(err){
+                console.log("Error", err);
+                callback(err);
+            }else{
+                let {table, whereColumn, whereValue} = filtr;
+                connection.query("DELETE FROM ?? WHERE ?? = ? LIMIT 1", [table, whereColumn, whereValue], function(err, result){
+                    if(err){
+                        console.log("Error", err);
+                        callback(err);
+                    }else{
+                        callback(null, result);
+                    }
+                });
+            }
+            connection.release();
         });
     }
 };

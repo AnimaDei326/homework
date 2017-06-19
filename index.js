@@ -1,8 +1,19 @@
 const express = require('express');
 const templating = require('consolidate');
 const bodyParser = require('body-parser');
-const tasks = require('./models/task');
 const app = express();
+
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
+const session = require('cookie-session');
+app.use(session({
+  name: 'session',
+  keys: ['key1', 'key2'],
+  httpOnly: false
+}));
+
+const Tasks = require('./models/task');
 
 app.engine('hbs', templating.handlebars);
 app.set('view engine', 'hbs');
@@ -10,90 +21,39 @@ app.set('views', `${__dirname}/views`);
 app.use('/css', express.static(__dirname + '/css'));
 app.use(bodyParser.urlencoded({ extended: false }));
 
+
+//Главная страница
 app.get('/', function(req, res, next){
     res.render('index', {
-        title: 'Главная страница'
+        title: 'Главная страница',
+        h1: 'Model CRUD (create-read-update-delete) powered by Node JS, Express and GeekBrains',
+        login: req.session.login || false
     });
 });
 
+//Список задач
 app.get('/task', function(req, res, next){
-    tasks.showAll('tasks', function(err, tasks){
+    Tasks.showAll('tasks', function(err, tasks){
         if(err){
             console.log(err);
         }else{
             res.render('task', {
                 title: 'Все задачи',
-                rows: tasks
+                h1: 'Список задач',
+                rows: tasks,
+                login: req.session.login || false
             });
         }
     });
 });
 
-app.get('/edit/:id', function(req, res, next){
-    if(typeof(parseInt(req.params.id)) != "number"){
-        tasks.showAll('tasks', function(err, tasks){
-            if(err){
-                console.log(err);
-            }else{
-                res.render('task', {
-                    title: 'Все задачи',
-                    rows: tasks
-                });
-            }
-        });
-    }else{
-        let filtr = {
-            table: 'tasks',
-            id: req.params.id
-        };
-        tasks.getByID(filtr, function(err, result){
-            if(err){
-                console.log(err);
-            }else{
-                res.render('edit', {
-                    title: 'Редактирование задачи',
-                    rows: result
-                });
-            }
-        });
-    }
-});
-
+//Создание задачи
 app.get('/add', function(req, res, next){
     res.render('add', {
-        title: 'Создание задачи'
+        title: 'Создание задачи',
+        h1: 'Создание задачи',
+        login: req.session.login || false
     })
-});
-
-app.get('/delete/:id', function(req, res, next){
-    if(typeof(parseInt(req.params.id)) != "number"){
-        tasks.showAll('tasks', function(err, tasks){
-            if(err){
-                console.log(err);
-            }else{
-                res.render('task', {
-                    title: 'Все задачи',
-                    rows: tasks
-                });
-            }
-        });
-    }else{
-        let filtr = {
-            table: 'tasks',
-            whereColumn: 'id',
-            whereValue: req.params.id
-        };
-        tasks.del(filtr, function(err, result){
-            if(err){
-                console.log(err);
-            }else{
-                res.render('complete', {
-                    title: 'Уведомление',
-                    h1: 'Задача успешно удалена'
-                });
-            }
-        });
-    }
 });
 
 app.post('/add', function(req, res, next){
@@ -103,7 +63,7 @@ app.post('/add', function(req, res, next){
         setColumn: 'text',
         setValue: text
     };
-    tasks.add(filtr, function(err, result){
+    Tasks.add(filtr, function(err, result){
         if(err){
             console.log(err);
         }else{
@@ -115,14 +75,50 @@ app.post('/add', function(req, res, next){
     });
 });
 
-app.post('/update', function(req, res, next){
-    if(typeof(req.body.text) != "string" && (typeof(parseInt(req.body.id))) != "number"){
-        tasks.showAll('tasks', function(err, tasks){
+//Редактирование задачи
+app.get('/edit/:id', function(req, res, next){
+    if(typeof(parseInt(req.params.id)) != "number"){
+        Tasks.showAll('tasks', function(err, tasks){
+            if(err){
+                console.log(err);
+            }else{
+                let loginReq = req.session.login || 'Гость';
+                res.render('task', {
+                    title: 'Все задачи',
+                    h1: 'Список задач',
+                    rows: tasks,
+                    login: req.session.login || false
+                });
+            }
+        });
+    }else{
+        let filtr = {
+            table: 'tasks',
+            id: req.params.id
+        };
+        Tasks.getByID(filtr, function(err, result){
+            if(err){
+                console.log(err);
+            }else{
+                res.render('edit', {
+                    title: 'Редактирование задачи',
+                    h1: 'Редактирование задачи',
+                    row: result
+                });
+            }
+        });
+    }
+});
+
+app.post('/edit', function(req, res, next){
+    if(typeof(parseInt(req.body.id)) != "number"){
+        Tasks.showAll('tasks', function(err, tasks){
             if(err){
                 console.log(err);
             }else{
                 res.render('task', {
                     title: 'Все задачи',
+                    h1: 'Список задач',
                     rows: tasks
                 });
             }
@@ -142,7 +138,7 @@ app.post('/update', function(req, res, next){
             whereColumn: 'id',
             whereValue: req.body.id
         };
-        tasks.update(filtr, function(err, result){
+        Tasks.update(filtr, function(err, result){
             if(err){
                 console.log(err);
             }else if(result){
@@ -155,4 +151,57 @@ app.post('/update', function(req, res, next){
     }
 });
 
+//Удаление задачи
+app.get('/delete/:id', function(req, res, next){
+    if(typeof(parseInt(req.params.id)) != "number"){
+        Tasks.showAll('tasks', function(err, tasks){
+            if(err){
+                console.log(err);
+            }else{
+                let loginReq = req.session.login || 'Гость';
+                res.render('task', {
+                    title: 'Все задачи',
+                    h1: 'Список задач',
+                    rows: tasks,
+                    login: req.session.login || false
+                });
+            }
+        });
+    }else{
+        let filtr = {
+            table: 'tasks',
+            whereColumn: 'id',
+            whereValue: req.params.id
+        };
+        Tasks.del(filtr, function(err, result){
+            if(err){
+                console.log(err);
+            }else{
+                res.render('complete', {
+                    title: 'Уведомление',
+                    h1: 'Задача успешно удалена'
+                });
+            }
+        });
+    }
+});
+
+//Авторизация
+app.get('/autoriz', function(req, res, next){
+    res.render('autoriz', {
+        title: 'Авторизация',
+        h1: 'Авторизация',
+        login: req.session.login || false
+    });
+});
+
+app.post('/autoriz', function(req, res, next){
+    req.session.login = req.body.login;
+    req.session.password = req.body.password;
+    console.log(req.session);
+    res.render('autoriz', {
+        title: 'Авторизация',
+        h1: 'Авторизация'
+    });
+})
 app.listen(8888);
