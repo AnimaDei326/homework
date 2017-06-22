@@ -1,37 +1,16 @@
-<!DOCTYPE html>
-<html lang="ru">
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <link rel="stylesheet" href="../css/style.css">
-        <title>{{title}}</title>
-    </head>
-    <body>
-        <ul class="menu">
-            <li><a href="/">Главная страница</a></li>
-            <li><a href="/task">Просмотр задач</a></li>
-            <li><a href="/add">Создать задачу</a></li>
-            {{#if login}}
-                <li><a href="/user">Личный кабинет</a></li>
-                <li><a href="/logout">Выйти</a></li>
-            {{else}}
-                <li><a href="/autoriz">Авторизация</a></li>
-            {{/if}}
-	    </ul>
-        <div class="content">
-            {{#if rows}}
-                <h1>{{h1}}</h1>
-                {{#each rows}}
-                    <div class="task">
-                        <h3>Задача № {{this.id}}</h3>
-                        <h3>Статус: {{#if this.done}} выполнена {{else}} не выполнена {{/if}} </h3>
-                        <h3>Описание: {{this.text}}</h3>
-                        <a href="/edit/{{this.id}}">редактировать</a><br>
-                        <a href="/delete/{{this.id}}">удалить</a>
-                    </div>
-                {{/each}}
-            {{else}}
-                <h1>Список задач пуст</h1>
-            {{/if}}
-        </div>
-    </body>
-</html>
+{{> header}}
+    {{#if rows}}
+        <h1>{{h1}}</h1>
+        {{#each rows}}
+            <div class="task">
+                <h3>Задача № {{this.id}}</h3>
+                <h3>Статус: {{#if this.done}} выполнена {{else}} не выполнена {{/if}} </h3>
+                <h3>Описание: {{this.text}}</h3>
+                <a href="/edit/{{this.id}}">редактировать</a><br>
+                <a href="/delete/{{this.id}}">удалить</a>
+            </div>
+        {{/each}}
+    {{else}}
+        <h1>Список задач пуст</h1>
+    {{/if}}
+{{> footer}}

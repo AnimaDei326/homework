@@ -1,0 +1,55 @@
+<script>
+    window.onload = function(){
+        (function(){
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'http://localhost:8888/show/', false);
+            xhr.send();
+            if (xhr.status != 200) {
+                alert( xhr.status + ': ' + xhr.statusText );
+            } else {
+                var json = JSON.parse(xhr.response);
+                if(!json.rows.length){
+                    let h1 = document.createElement('h1');
+                    h1.innerText = 'Список задач пуст';
+                    content.appendChild(h1)
+                }else{
+                    for(let i = 0; i < json.rows.length; i++){
+                        let div = document.createElement('div');
+                        div.className = 'task';
+
+                        let h3_1 = document.createElement('h3');
+                        h3_1.innerText = 'Задача № ' + json.rows[i]['id'];
+
+                        let h3_2 = document.createElement('h3');
+                        let status = 'не выполнена';
+                        if(json.rows[i]['done']) status = 'выполнена';
+                        h3_2.innerText = 'Статус: ' + status;
+
+                        let h3_3 = document.createElement('h3');
+                        h3_3.innerText = 'Описание ' + json.rows[i]['text'];
+
+                        let a_1 = document.createElement('a');
+                        a_1.innerText = 'редактировать';
+                        a_1.href = '/edit/' + json.rows[i]['id'];
+
+                        let a_2 = document.createElement('a');
+                        a_2.innerText = 'удалить';
+                        a_2.href = '/delete/' + json.rows[i]['id'];
+
+                        let br = document.createElement('br');
+
+                        content.appendChild(div);
+                        div.appendChild(h3_1);
+                        div.appendChild(h3_2);
+                        div.appendChild(h3_3);
+                        div.appendChild(a_1);
+                        div.appendChild(br);
+                        div.appendChild(a_2);
+                    }
+                }
+            }
+        })();
+    };
+</script>
+{{> header}}
+{{> footer}}
