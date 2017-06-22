@@ -1,11 +1,12 @@
 const express = require('express');
 const templating = require('consolidate');
-const bodyParser = require('body-parser');
-const util = require('util');
 const app = express();
 
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
+
+const bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({ extended: false }));
 
 const session = require('cookie-session');
 app.use(session({
@@ -14,20 +15,110 @@ app.use(session({
   httpOnly: false
 }));
 
-const restify = require('restify');
-const client = restify.createClient({
-    url: 'http://localhost:8888/'
-});
+const passport = require('passport');
+app.use(passport.initialize());
+app.use(passport.session());
 
+const Strategy = require('passport-local').Strategy;
 
 const Tasks = require('./models/task');
+const Users = require('./models/user');
 
 app.engine('hbs', templating.handlebars);
 app.set('view engine', 'hbs');
 app.set('views', `${__dirname}/views`);
 app.use('/css', express.static(__dirname + '/css'));
-app.use(bodyParser.urlencoded({ extended: false }));
 
+
+//Авторизация
+passport.use(new Strategy(function(username, password, done){
+    let filtr = {
+        table: 'users',
+        something: 'username',
+        value: username
+    }
+    Users.getBySomething(filtr, function(err, userdata){
+        if(err){
+            console.log(err);
+            return done(null, false);
+        }else if(userdata != undefined){
+            let filtr = {
+                table: 'users',
+                something: 'password',
+                value: password
+            }
+            Users.getBySomething(filtr, function(err, userdata){
+                if(err){
+                    console.log(err);
+                    return done(null, false);
+                }else if(userdata != undefined){
+                    return done(null, {
+                        user: userdata
+                    });
+                }else{
+                    return done(null, false);
+                }
+            });
+        }else{
+            return done(null, false);
+        }
+    });
+}));
+
+passport.serializeUser(function(user, done){
+    done(null, user);
+});
+
+passport.deserializeUser(function(id, done){
+    done(null, id);
+});
+
+const auth = passport.authenticate('local', {
+        successRedirect: '/user', 
+        failureRedirect: '/login'
+});
+
+app.get('/login', function(req, res, next){
+    res.render('auth', {
+        title: 'Авторизация',
+        h1: 'Авторизация',
+        partials: { 
+            header: 'partials/header',
+            footer: 'partials/footer'
+        }
+    });
+});
+
+app.post('/login', auth);
+
+const mustBeAuthenticated = function(req, res, next){
+    if(req.isAuthenticated()){
+        next();
+    }else{
+        res.redirect('/login');
+    }
+};
+
+app.all('/user', mustBeAuthenticated);
+app.all('/add', mustBeAuthenticated);
+app.all('/edit/*', mustBeAuthenticated);
+app.all('/delete/*', mustBeAuthenticated);
+
+app.get( '/user', function(req, res) {
+  res.render( 'user', {
+        title: 'Профиль',
+        h1: 'привет, пользователь',
+        partials: { 
+            header: 'partials/header',
+            footer: 'partials/footer'
+        }
+    });
+});
+
+app.get('/logout', function(req, res){
+    req.logout();
+    res.redirect('/login');
+});
 
 //Главная страница
 app.get( '/', function(req, res, next) {
@@ -60,7 +151,7 @@ app.get('/task', function(req, res, next){
     });
 });
 
-
+//Список задач через ajax
 app.get('/rest', function(request, response, next){
     response.render('rest', {
         title: 'Все задачи',
@@ -83,6 +174,7 @@ app.get('/show', function(req, res, next){
         }
     });
 });
+
 //Создание задачи
 app.get('/add', function(req, res, next){
     res.render('add', {
@@ -251,29 +343,4 @@ app.get('/delete/:id', function(req, res, next){
     }
 });
 
-//Авторизация
-app.get('/auth', function(req, res, next){
-    res.render('auth', {
-        title: 'Авторизация',
-        h1: 'Авторизация',
-        partials: { 
-            header: 'partials/header',
-            footer: 'partials/footer'
-        }
-    });
-});
-
-app.post('/auth', function(req, res, next){
-    req.session.login = req.body.login;
-    req.session.password = req.body.password;
-    console.log(req.session);
-    res.render('index', {
-        title: 'Главная страница',
-        h1: 'Model CRUD (create-read-update-delete) powered by Node JS, Express and GeekBrains',
-        partials: { 
-            header: 'partials/header',
-            footer: 'partials/footer'
-        }
-    });
-})
 app.listen(8888);
